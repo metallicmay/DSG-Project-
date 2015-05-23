@@ -98,7 +98,7 @@
 	//2.Use app id,secret and redirect url
 	 $app_id = '754225167991120';
 	 $app_secret = '1c86383191c399a92d6ff0d1be14a89d';
-	 $redirect_url='http://localhost/fblogin/';
+	 $redirect_url='http://localhost:8080/dsg/';
 	 
 	 //3.Initialize application, create helper object and get fb sess
 	 FacebookSession::setDefaultApplication($app_id,$app_secret);
@@ -108,7 +108,7 @@
 	 	$sess = new FacebookSession($_SESSION['fb_token']);
 	}
 	//logout
-	$logout = 'http://localhost/fblogin/index.php?logout=true';
+	$logout = 'http://localhost:8080/dsg/index.php?logout=true';
 	if(isset($sess)){
 		//store the token in the php session
 	 		$_SESSION['fb_token']=$sess->getToken();
