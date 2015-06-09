@@ -15,46 +15,13 @@
   right:50px;  
   top:50px;
   outline:1px solid black;
+
+}
+table, th, td {
+    border: 1px solid black;
+    border-collapse: collapse;
 }
 </style>
-<div id="ticker">
-        <marquee direction="up">
-          <table>
-            <thead>
-            <tr>
-              <td>Symbol</td>
-              <td>Price</td>
-            </tr>
-            </thead>
-            <tbody>          <tr>
-            <td>AAPL</td>
-            <td>111.81</td>
-          </tr>          <tr>
-            <td>YHOO</td>
-            <td>50.90</td>
-          </tr>          <tr>
-            <td>MSFT</td>
-            <td>48.85</td>
-          </tr>          <tr>
-            <td>TWTR</td>
-            <td>43.515</td>
-          </tr>          <tr>
-            <td>CSCO</td>
-            <td>24.91</td>
-          </tr>          <tr>
-            <td>F</td>
-            <td>14.71</td>
-          </tr>          <tr>
-            <td>ZNGA</td>
-            <td>2.81</td>
-          </tr>          <tr>
-            <td>WMT</td>
-            <td>80.94</td>
-          </tr>            </tbody>
-          </table>
-         </marquee>
-       </div>
-</html>
 <?php
 
 /* INCLUSION OF LIBRARY FILEs*/
@@ -123,8 +90,10 @@
 		// use graph object methods to get user details
 		$name= $graph->getName();
 		$id = $graph->getId();
+		 //select user from database
 		$query= mysql_query("SELECT * FROM users WHERE NAME ='".$name."'") or die(mysql_error());
-        $result=mysql_fetch_array($query);
+        	$result=mysql_fetch_array($query);
+		//fetch liquid cash value
 		$liqcash=$result['LIQUIDCASH'];
 		$liqnew="";
 		$tot="";
@@ -133,22 +102,21 @@
 		echo"<div align=center><a href=home.php> Homepage &nbsp;</a> <a href=user.php> Userpage &nbsp;</a> <a href=lb.php> &nbsp;  Leaderboard  </a></div>";
 		echo "<div align=center>Liquid Cash: $liqcash <br></div>";
 		echo "<div align=center><br>HOMEPAGE</div>";
-		$qry= mysql_query("SELECT * FROM stockprices WHERE STOCK='FB'") or die(mysql_error());
-        $res=mysql_fetch_array($qry);
-		$fb=$res['PRICE'];
-		$stocks=$fb;
-		if (isset($_GET['fin'])) 
+	     //calculate new values after buy/sell button is clicked and update in database
+		if (isset($_GET['prices'])) 
 		 {
-		 $liqnew = $_GET['fin'];
+		 $prices = explode(",", $_GET["prices"]);
+		 $liqnew = $prices[0];
+		 $stocks = $prices[1];
 		 $tot=$liqnew+$stocks;
 		 $check=true;
 		 }
-		 if($check)
+		if($check)
 		{
 		
 		$sql="UPDATE users 
 		      SET LIQUIDCASH=$liqnew, STOCKS=$stocks, TOTAL=$tot
-		     WHERE name='".$name."'";
+		      WHERE name='".$name."'";
 		$quer=mysql_query($sql);
         if(!$quer)
          echo "Failed" .mysql_error();
@@ -158,46 +126,83 @@
 		//else echo login
 		echo '<a href='.$helper->getLoginUrl().'>Login with facebook</a>';
 	}
-	?>
-	<html>
-	   <script type="text/javascript">
-        function buy()
-        { 
-         var fb = "<?php echo $fb;?>";
-		 var liq = "<?php echo $liqcash;?>";
-		 var fin;
-		 fin=liq-fb;
-		 window.location = "?fin=" + fin;
 
+		include_once('class.yahoostock.php');
+		 
+		$objYahooStock = new YahooStock; //creating object
+		$objYahooStock->addFormat("sl1hg"); //adding format/parameters to be fetched
+        //adding company stock code to be fetched
+		$objYahooStock->addStock("msft"); 
+		$objYahooStock->addStock("yhoo");
+		$objYahooStock->addStock("goog"); 
+		$objYahooStock->addStock("aapl"); 
+
+	?>	
+	<script type="text/javascript">
+        function buy(price)
+        { 
+         var liq = "<?php echo $liqcash;?>";
+		 var fin;
+		 fin=liq-price;
+		 window.location = "?prices=" + fin + "," + price;
         }
         function sell()
          {
+		 
          }
-</script>
-	   <body>
+	</script>
+  
+	<body>
 	   <form method="post">
-	    <table border="1">
-            <thead>
+	    <table>            
             <tr>
-              <td>Symbol</td>
-              <td>Real-time</td>
-			  <td>High</td>
-			  <td>Low</td>
-			  <td>Buy</td>
-			  <td>Sell</td>
+              <th>Symbol</th>
+              <th>Price</th>
+			  <th>High</th>
+			  <th>Low</th>
+			  <th>Buy</th>
+			  <th>Sell</th>
             </tr>
-            </thead>
-            <tbody>        
+        <?php foreach( $objYahooStock->getQuotes() as $code => $stock)
+			{
+		?>			
 			<tr>
-            <td>FB</td>
-            <td>75.80</td>
-			<td>76.76</td>
-			<td>75.36</td>
-			<td><input type="button" value="Buy" onclick="buy()"></td>
-			<td><input type="button" value="Sell" onclick="sell()"></td>
+            <td> <?php echo $stock[0]; ?> </td>
+			<td> <?php echo $stock[1]; ?> </td>
+			<td> <?php echo $stock[2]; ?> </td>
+			<td> <?php echo $stock[3]; ?> </td> 
+			<td><input type="button" value="Buy" onclick="buy('<?php echo $stock[1]?>')"></td>
+			<td><input type="button" value="Sell" onclick="sell()"> <br /> </td>
           </tr>         
-          </tbody>
+        <?php
+			}
+		?>
         </table>
 	   </form>
-	   </body>
-	   </html>
+	   <div id="ticker">
+        <marquee direction="up">
+          <table>
+            <thead>
+			<tr>
+              <th>Symbol</th>
+              <th>Price</th>
+            </tr>
+            </thead>
+            <?php foreach( $objYahooStock->getQuotes() as $code => $stock)
+			{
+		    ?>	
+			<tbody>          
+			<tr>
+            <td><?php echo $stock[0]; ?></td>
+            <td><?php echo $stock[1]; ?></td>
+           </tr>
+		   </tbody>
+		   <?php
+			}
+		   ?>
+          </table>
+         </marquee>
+       </div>
+	</body>
+</html>
+	   	
