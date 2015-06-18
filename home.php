@@ -92,11 +92,13 @@ table, th, td {
 		$id = $graph->getId();
 		 //select user from database
 		$query= mysql_query("SELECT * FROM users WHERE NAME ='".$name."'") or die(mysql_error());
-        	$result=mysql_fetch_array($query);
+        $result=mysql_fetch_array($query);
 		//fetch liquid cash value
 		$liqcash=$result['LIQUIDCASH'];
+		$ex_stock=$result['STOCKS'];
 		$liqnew="";
 		$tot="";
+		$stocks = "";
 		echo "Hi $name";
 		echo "<div align=right><a href='".$logout."'>Logout</a></div>";
 		echo"<div align=center><a href=home.php> Homepage &nbsp;</a> <a href=user.php> Userpage &nbsp;</a> <a href=lb.php> &nbsp;  Leaderboard  </a></div>";
@@ -108,24 +110,25 @@ table, th, td {
 		 $prices = explode(",", $_GET["prices"]);
 		 $liqnew = $prices[0];
 		 $stocks = $prices[1];
-		 $tot=$liqnew+$stocks;
+		 $tot=$liqnew+$stocks+$ex_stock;
 		 $check=true;
 		 }
 		if($check)
 		{
 		
 		$sql="UPDATE users 
-		      SET LIQUIDCASH=$liqnew, STOCKS=$stocks, TOTAL=$tot
+		      SET LIQUIDCASH=$liqnew, STOCKS = STOCKS + $stocks, TOTAL=$tot
 		      WHERE name='".$name."'";
 		$quer=mysql_query($sql);
         if(!$quer)
          echo "Failed" .mysql_error();
+		 $check = false;
 		 }
 		}
 		else{
 		//else echo login
 		echo '<a href='.$helper->getLoginUrl().'>Login with facebook</a>';
-	}
+	    }
 
 		include_once('class.yahoostock.php');
 		 
@@ -141,15 +144,54 @@ table, th, td {
 	<script type="text/javascript">
         function buy(price)
         { 
+		 var qty; 
+		 do
+		 {
+		 qty = prompt("Enter quantity: ", "100");
+		 } while(isNaN(qty));
          var liq = "<?php echo $liqcash;?>";
 		 var fin;
-		 fin=liq-price;
-		 window.location = "?prices=" + fin + "," + price;
+		 var tprice;
+		 tprice = price*qty;
+		 fin=liq-tprice;
+		 window.location = "?prices=" + fin + "," + tprice;
         }
-        function sell()
+        function sell(price)
          {
-		 
+		 var qty; 
+		 do
+		 {
+		 qty = prompt("Enter quantity: ", "100");
+		 } while(isNaN(qty));
+         var liq = "<?php echo $liqcash;?>";
+		 var fin;
+		 var tprice;
+		 tprice = (-price)*qty;
+		 fin=liq-tprice;
+		 window.location = "?prices=" + fin + "," + tprice;
          }
+		 
+		 function reset()
+		 {
+		 var xmlhttp;
+				if (window.XMLHttpRequest)
+				  {// code for IE7+, Firefox, Chrome, Opera, Safari
+				  xmlhttp=new XMLHttpRequest();
+				  }
+					else
+				  {// code for IE6, IE5
+				  xmlhttp=new ActiveXObject("Microsoft.XMLHTTP");
+				  }
+				xmlhttp.onreadystatechange=function()
+				  {
+				  if (xmlhttp.readyState==4 && xmlhttp.status==200)
+					{
+					document.getElementById("res").innerHTML=xmlhttp.responseText;
+					}
+				  }
+				xmlhttp.open("POST","reset.php",true);
+				xmlhttp.send();
+		 }
 	</script>
   
 	<body>
@@ -172,13 +214,14 @@ table, th, td {
 			<td> <?php echo $stock[2]; ?> </td>
 			<td> <?php echo $stock[3]; ?> </td> 
 			<td><input type="button" value="Buy" onclick="buy('<?php echo $stock[1]?>')"></td>
-			<td><input type="button" value="Sell" onclick="sell()"> <br /> </td>
+			<td><input type="button" value="Sell" onclick="sell('<?php echo $stock[1]?>')"> <br /> </td>
           </tr>         
         <?php
 			}
 		?>
         </table>
 	   </form>
+	   <button id = "res" onclick = "reset()";> Reset </button>
 	   <div id="ticker">
         <marquee direction="up">
           <table>
