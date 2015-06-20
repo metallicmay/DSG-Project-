@@ -2,58 +2,9 @@
  include_once("database.php") 
  ?> 
 <html>
-<style type='text/css'>
-#logout
-{ position:absolute;
-  right:50px;  
-  top:0px;
-  }
-  
-#ticker
-{ position:absolute;
-  right:50px;  
-  top:50px;
-  outline:1px solid black;
-}
-</style>
-<div id="ticker">
-        <marquee direction="up">
-          <table>
-            <thead>
-            <tr>
-              <td>Symbol</td>
-              <td>Price</td>
-            </tr>
-            </thead>
-            <tbody>          <tr>
-            <td>AAPL</td>
-            <td>111.81</td>
-          </tr>          <tr>
-            <td>YHOO</td>
-            <td>50.90</td>
-          </tr>          <tr>
-            <td>MSFT</td>
-            <td>48.85</td>
-          </tr>          <tr>
-            <td>TWTR</td>
-            <td>43.515</td>
-          </tr>          <tr>
-            <td>CSCO</td>
-            <td>24.91</td>
-          </tr>          <tr>
-            <td>F</td>
-            <td>14.71</td>
-          </tr>          <tr>
-            <td>ZNGA</td>
-            <td>2.81</td>
-          </tr>          <tr>
-            <td>WMT</td>
-            <td>80.94</td>
-          </tr>            </tbody>
-          </table>
-         </marquee>
-       </div>
-</html>
+<head>
+<link rel="stylesheet" type="text/css" href="style.css">
+</head>
 <?php
 
 /* INCLUSION OF LIBRARY FILEs*/
@@ -151,5 +102,43 @@
 		//else echo login
 		echo '<a href='.$helper->getLoginUrl().'>Login with facebook</a>';
 	}
+	
+	include_once('class.yahoostock.php');
+		 
+		$objYahooStock = new YahooStock; //creating object
+		$objYahooStock->addFormat("sl1hg"); //adding format/parameters to be fetched
+		
+        //adding company stock code to be fetched
+		$objYahooStock->addStock("msft"); 
+		$objYahooStock->addStock("yhoo");
+		$objYahooStock->addStock("goog"); 
+		$objYahooStock->addStock("aapl"); 
 	?>
- 
+ 	
+ <body>
+ <div id="ticker">
+        <marquee direction="up">
+          <table>
+            <thead>
+			<tr>
+              <th>Symbol</th>
+              <th>Price</th>
+            </tr>
+            </thead>
+            <?php foreach( $objYahooStock->getQuotes() as $code => $stock)
+			{
+		    ?>	
+			<tbody>          
+			<tr>
+            <td><?php echo $stock[0]; ?></td>
+            <td><?php echo $stock[1]; ?></td>
+           </tr>
+		   </tbody>
+		   <?php
+			}
+		   ?>
+          </table>
+         </marquee>
+       </div>
+ </body>
+  </html>
