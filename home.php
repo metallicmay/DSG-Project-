@@ -137,7 +137,7 @@ function buy(sym,price)
 		 qty = prompt("Enter quantity: ", "100");
 		   
 		 } while(isNaN(qty)||qty<=0);
-         var liq = '<?php echo $liqcash?>';
+         	var liq = '<?php echo $liqcash?>';
 		 var uid = '<?php echo $uid?>';
 		 var fin;
 		 var tprice;
@@ -150,13 +150,17 @@ function buy(sym,price)
 		 fin=liq-tprice;
 		 window.location = "?liq=" + fin;
 		 var xmlhttp;
+		 var xhr;
+		 var type = "Buy";
 		if (window.XMLHttpRequest)
 		  {// code for IE7+, Firefox, Chrome, Opera, Safari
 		  xmlhttp=new XMLHttpRequest();
+		  xhr=new XMLHttpRequest();
 		  }
 		else
 		  {// code for IE6, IE5
 		  xmlhttp=new ActiveXObject("Microsoft.XMLHTTP");
+		  xhr=new ActiveXObject("Microsoft.XMLHTTP");
 		  }
 		xmlhttp.onreadystatechange=function()
 		  {
@@ -165,8 +169,17 @@ function buy(sym,price)
 			
 			}
 		  }
-		  xmlhttp.open("GET","insert.php?uid=" + uid + "&sym=" + sym + "&qty=" + qty + "&price=" + price,true);
+		  xhr.onreadystatechange=function()
+		  {
+		  if (xhr.readyState==4 && xhr.status==200)
+			{
+			
+			}
+		  }
+	  xmlhttp.open("GET","insert.php?uid=" + uid + "&sym=" + sym + "&qty=" + qty + "&price=" + price,true);
           xmlhttp.send();
+          xhr.open("GET","logs.php?uid=" + uid + "&sym=" + sym + "&qty=" + qty + "&price=" + price + "&type=" + type,true);
+          xhr.send();
 		 }
         }
    
@@ -183,7 +196,7 @@ function buy(sym,price)
 		 var tprice;
 		 tprice = price*qty;
 		 var xmlhttp;
-		if (window.XMLHttpRequest)
+		 if (window.XMLHttpRequest)
 		  {// code for IE7+, Firefox, Chrome, Opera, Safari
 		  xmlhttp=new XMLHttpRequest();
 		  }
@@ -199,7 +212,7 @@ function buy(sym,price)
 			}
 		  }
 		  xmlhttp.open("GET","sell.php?uid=" + uid + "&sym=" + sym + "&qty=" + qty + "&price=" + price,false);
-          xmlhttp.send();
+          	  xmlhttp.send();
 		  if(xmlhttp.responseText.trim()=="No") {
 		   alert('User does not own this stock');
 		   } 
@@ -209,6 +222,25 @@ function buy(sym,price)
 		  else if(xmlhttp.responseText.trim()=="Yes") {
 		  fin=liq+tprice;
 		  window.location = "?liq=" + fin;
+		  var type = "Sell";
+		  var xhr;
+			 if (window.XMLHttpRequest)
+			  {// code for IE7+, Firefox, Chrome, Opera, Safari
+			  xhr=new XMLHttpRequest();
+			  }
+			else
+			  {// code for IE6, IE5
+			  xhr=new ActiveXObject("Microsoft.XMLHTTP");
+			  }
+			  xhr.onreadystatechange=function()
+			  {
+			  if (xhr.readyState==4 && xhr.status==200)
+				{
+				
+				}
+			  }
+		  xhr.open("GET","logs.php?uid=" + uid + "&sym=" + sym + "&qty=" + qty + "&price=" + price + "&type=" + type,true);
+          	  xhr.send();
 		  }
          }    		 
     function reset()
