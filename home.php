@@ -135,8 +135,8 @@ function buy(sym,price)
 		 do
 		 {
 		 qty = prompt("Enter quantity: ", "100");
-		 } while(isNaN(qty));
-		 
+		   
+		 } while(isNaN(qty)||qty<=0);
          var liq = '<?php echo $liqcash?>';
 		 var uid = '<?php echo $uid?>';
 		 var fin;
@@ -176,10 +176,12 @@ function buy(sym,price)
 		 do
 		 {
 		 qty = prompt("Enter quantity: ", "100");
-		 } while(isNaN(qty));
-         	var liq = '<?php echo $liqcash?>';
+		 } while(isNaN(qty)||qty<=0);
+         var liq = '<?php echo $liqcash?>';
 		 var uid = '<?php echo $uid?>';
 		 var fin;		 
+		 var tprice;
+		 tprice = price*qty;
 		 var xmlhttp;
 		if (window.XMLHttpRequest)
 		  {// code for IE7+, Firefox, Chrome, Opera, Safari
@@ -196,7 +198,7 @@ function buy(sym,price)
 			
 			}
 		  }
-		  xmlhttp.open("GET","sell.php?sym=" + sym + "&qty=" + qty + "&price=" + price,false);
+		  xmlhttp.open("GET","sell.php?uid=" + uid + "&sym=" + sym + "&qty=" + qty + "&price=" + price,false);
           xmlhttp.send();
 		  if(xmlhttp.responseText.trim()=="No") {
 		   alert('User does not own this stock');
@@ -209,7 +211,7 @@ function buy(sym,price)
 		  window.location = "?liq=" + fin;
 		  }
          }    		 
-	 function reset()
+    function reset()
 		 {
 		 var xmlhttp;
 				if (window.XMLHttpRequest)
